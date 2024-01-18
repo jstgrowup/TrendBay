@@ -1,26 +1,65 @@
-import { FaSearch, FaShoppingBag, FaSignInAlt, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
-const user = { _id: "",role:"user" };
-const Header = () => {
+import {
+  FaSearch,
+  FaShoppingBag,
+  FaSignInAlt,
+  FaUser,
+  FaSignOutAlt,
+} from "react-icons/fa";
+import { useState } from "react";
+import { User } from "../types/types";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import toast from "react-hot-toast";
+
+interface PropsType {
+  user: User | null;
+}
+
+const Header = ({ user }: PropsType) => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const logoutHandler = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Sign Out Successfully");
+      setIsOpen(false);
+    } catch (error) {
+      toast.error("Sign Out Fail");
+    }
+  };
+
   return (
-    <nav>
-      <Link to={"/"}>Home</Link>
-      <Link to={"/search"}>
+    <nav className="header">
+      <Link onClick={() => setIsOpen(false)} to={"/"}>
+        HOME
+      </Link>
+      <Link onClick={() => setIsOpen(false)} to={"/search"}>
         <FaSearch />
       </Link>
-      <Link to={"/cart"}>
+      <Link onClick={() => setIsOpen(false)} to={"/cart"}>
         <FaShoppingBag />
       </Link>
-      {user._id ? (
+
+      {user?._id ? (
         <>
-          <button>
+          <button onClick={() => setIsOpen((prev) => !prev)}>
             <FaUser />
           </button>
-          <dialog>
+          <dialog open={isOpen}>
             <div>
-                {
-                    user.role
-                }
+              {user.role === "admin" && (
+                <Link onClick={() => setIsOpen(false)} to="/admin/dashboard">
+                  Admin
+                </Link>
+              )}
+
+              <Link onClick={() => setIsOpen(false)} to="/orders">
+                Orders
+              </Link>
+              <button onClick={logoutHandler}>
+                <FaSignOutAlt />
+              </button>
             </div>
           </dialog>
         </>
